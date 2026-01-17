@@ -7,41 +7,73 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { background: #050505; color: #ffffff; font-family: sans-serif; margin: 0; text-align: center; }
-        .container { padding: 20px; }
-        /* Interfața de Ecran (Laptop/TV) */
-        #display-ui { display: none; height: 100vh; flex-direction: column; justify-content: center; background: black; }
-        .card { border: 5px solid #d4af37; padding: 50px; border-radius: 30px; margin: 20px; }
-        .author { font-size: 40px; color: #d4af37; margin-bottom: 20px; }
-        .text { font-size: 70px; font-weight: bold; line-height: 1.2; }
-        /* Interfața de Telefon */
-        input, textarea { width: 90%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #d4af37; background: #111; color: #fff; font-size: 18px; }
-        button { background: #d4af37; color: #000; padding: 20px; width: 90%; border: none; border-radius: 10px; font-weight: bold; font-size: 20px; cursor: pointer; }
+        body { 
+            /* Aici am pus direct poza ta ca fundal de baza */
+            background: #050505 url('https://i.ibb.co/yBWYrcHj/download-2.jpg') no-repeat center center fixed; 
+            color: #ffffff; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            text-align: center;
+            background-size: cover;
+        }
+
+        #display-ui { 
+            display: none; 
+            height: 100vh; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+        }
+        .card { 
+            background: rgba(0, 0, 0, 0.8); 
+            border: 5px solid #d4af37; 
+            padding: 60px; 
+            border-radius: 40px; 
+            max-width: 80%;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+        }
+        .author { font-size: 45px; color: #d4af37; margin-bottom: 25px; text-transform: uppercase; }
+        .text { font-size: 80px; font-weight: bold; line-height: 1.1; }
+
+        #form-ui { padding: 30px; background: #050505; min-height: 100vh; }
+        .logo-text { color: #d4af37; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        input, textarea { 
+            width: 90%; padding: 15px; margin: 10px 0; border-radius: 12px; 
+            border: 2px solid #d4af37; background: #111; color: #fff; font-size: 18px; 
+        }
+        button { 
+            background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; 
+            padding: 20px; width: 95%; border: none; border-radius: 12px; 
+            font-weight: bold; font-size: 22px; cursor: pointer; 
+        }
+        #status { color: #d4af37; font-size: 20px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <div id="form-ui" class="container">
-        <h1 style="color:#d4af37">TRIMITE MESAJ LIVE</h1>
+    <div id="form-ui">
+        <div class="logo-text">EVENT INTERACTIVE LIVE</div>
         <input type="text" id="nume" placeholder="Numele tău">
-        <textarea id="mesaj" rows="4" placeholder="Scrie urarea ta aici..."></textarea>
+        <textarea id="mesaj" rows="4" placeholder="Scrie mesajul tău..."></textarea>
         <button onclick="trimite()">TRIMITE PE ECRAN</button>
-        <p id="status" style="display:none; color: #d4af37; font-size: 20px;">✅ Mesaj trimis!</p>
+        <p id="status" style="display:none;">✅ MESAJ TRIMIS!</p>
     </div>
 
     <div id="display-ui">
         <div class="card">
             <div id="author-display" class="author">AȘTEPTĂM MESAJE...</div>
-            <div id="text-display" class="text">Scanează codul QR pentru a trimite un mesaj live!</div>
+            <div id="text-display" class="text">Scanează codul QR și scrie un mesaj live!</div>
         </div>
     </div>
 
     <script>
-        // 1. CITIREA ID-ULUI DIN LINK
         const params = new URLSearchParams(window.location.search);
-        let eventID = params.get('id') || 'demo_general';
+        let eventID = params.get('id') || 'eveniment_general';
+        
+        // Daca totusi vrei sa schimbi poza prin link, linia asta ramane valabila
+        let bgFoto = params.get('bg'); 
+        if(bgFoto) { document.body.style.backgroundImage = "url('" + bgFoto + "')"; }
 
-        // 2. CONFIGURARE FIREBASE (Datele tale)
         const firebaseConfig = {
             apiKey: "AIzaSyAs-V_E8_p8_8_8_8_8_8_8_8", 
             databaseURL: "https://felicitari-nunta-default-rtdb.firebaseio.com",
@@ -49,17 +81,13 @@
             appId: "1:102925718812:web:01f5ec325b8234133216d9"
         };
         firebase.initializeApp(firebaseConfig);
-        
-        // CONECTARE LA FOLDERUL SPECIFIC
         const db = firebase.database().ref(eventID);
 
-        // 3. LOGICA DE AFISARE (TELEFON VS LAPTOP)
         if (window.innerWidth > 800) {
             document.getElementById('display-ui').style.display = 'flex';
             document.getElementById('form-ui').style.display = 'none';
         }
 
-        // 4. FUNCTIA TRIMITE
         function trimite() {
             const author = document.getElementById('nume').value;
             const text = document.getElementById('mesaj').value;
@@ -72,7 +100,6 @@
             }
         }
 
-        // 5. ASCULTARE MESAJE (PENTRU ECRAN)
         db.on('value', (snap) => {
             const data = snap.val();
             if(data && window.innerWidth > 800) {
