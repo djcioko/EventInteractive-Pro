@@ -3,74 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventInteractive Pro</title>
+    <title>EventInteractive Pro - Inimioare</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body { 
-            /* Aici am pus direct poza ta ca fundal de baza */
             background: #050505 url('https://i.ibb.co/yBWYrcHj/download-2.jpg') no-repeat center center fixed; 
-            color: #ffffff; 
-            font-family: 'Segoe UI', sans-serif; 
-            margin: 0; 
-            text-align: center;
+            color: #ffffff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden;
             background-size: cover;
         }
 
+        /* Inimioare Animate */
+        .heart {
+            position: absolute; color: rgba(212, 175, 55, 0.7);
+            font-size: 20px; user-select: none;
+            animation: moveHearts 10s linear infinite;
+            z-index: 1;
+        }
+        @keyframes moveHearts {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Interfața ECRAN (Laptop) */
         #display-ui { 
-            display: none; 
-            height: 100vh; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center;
+            display: none; height: 100vh; flex-direction: column; 
+            justify-content: center; align-items: center; position: relative; z-index: 2;
         }
         .card { 
-            background: rgba(0, 0, 0, 0.8); 
-            border: 5px solid #d4af37; 
-            padding: 60px; 
-            border-radius: 40px; 
-            max-width: 80%;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+            background: rgba(0, 0, 0, 0.85); border: 4px solid #d4af37; 
+            padding: 40px 60px; border-radius: 40px; 
+            max-width: 85%; min-width: 40%; word-wrap: break-word;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 1);
+            transition: all 0.5s ease; /* Face trecerea intre mesaje lina */
         }
-        .author { font-size: 45px; color: #d4af37; margin-bottom: 25px; text-transform: uppercase; }
-        .text { font-size: 80px; font-weight: bold; line-height: 1.1; }
+        .author { font-size: 40px; color: #d4af37; margin-bottom: 20px; text-transform: uppercase; }
+        .text { font-size: 70px; font-weight: bold; line-height: 1.2; }
 
-        #form-ui { padding: 30px; background: #050505; min-height: 100vh; }
-        .logo-text { color: #d4af37; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        /* Interfața TELEFON */
+        #form-ui { padding: 30px; position: relative; z-index: 10; background: #050505; min-height: 100vh; }
         input, textarea { 
             width: 90%; padding: 15px; margin: 10px 0; border-radius: 12px; 
             border: 2px solid #d4af37; background: #111; color: #fff; font-size: 18px; 
         }
         button { 
             background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; 
-            padding: 20px; width: 95%; border: none; border-radius: 12px; 
-            font-weight: bold; font-size: 22px; cursor: pointer; 
+            padding: 20px; width: 95%; border: none; border-radius: 12px; font-weight: bold; font-size: 22px; 
         }
-        #status { color: #d4af37; font-size: 20px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
     <div id="form-ui">
-        <div class="logo-text">EVENT INTERACTIVE LIVE</div>
+        <h2 style="color:#d4af37">TRIMITE UN MESAJ</h2>
         <input type="text" id="nume" placeholder="Numele tău">
-        <textarea id="mesaj" rows="4" placeholder="Scrie mesajul tău..."></textarea>
+        <textarea id="mesaj" rows="4" placeholder="Mesajul tău..."></textarea>
         <button onclick="trimite()">TRIMITE PE ECRAN</button>
-        <p id="status" style="display:none;">✅ MESAJ TRIMIS!</p>
+        <p id="status" style="display:none; color:#d4af37">✅ TRIMIS!</p>
     </div>
 
     <div id="display-ui">
         <div class="card">
             <div id="author-display" class="author">AȘTEPTĂM MESAJE...</div>
-            <div id="text-display" class="text">Scanează codul QR și scrie un mesaj live!</div>
+            <div id="text-display" class="text">Scanează codul și scrie ceva!</div>
         </div>
     </div>
 
     <script>
+        // Configurare
         const params = new URLSearchParams(window.location.search);
-        let eventID = params.get('id') || 'eveniment_general';
-        
-        // Daca totusi vrei sa schimbi poza prin link, linia asta ramane valabila
+        let eventID = params.get('id') || 'test_dj';
         let bgFoto = params.get('bg'); 
         if(bgFoto) { document.body.style.backgroundImage = "url('" + bgFoto + "')"; }
 
@@ -83,9 +85,23 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database().ref(eventID);
 
+        // Detectare Dispozitiv
         if (window.innerWidth > 800) {
             document.getElementById('display-ui').style.display = 'flex';
             document.getElementById('form-ui').style.display = 'none';
+            creeazaInimioare();
+        }
+
+        // Inimioare
+        function creeazaInimioare() {
+            for (let i = 0; i < 15; i++) {
+                let heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.innerHTML = '❤';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDelay = Math.random() * 10 + 's';
+                document.body.appendChild(heart);
+            }
         }
 
         function trimite() {
