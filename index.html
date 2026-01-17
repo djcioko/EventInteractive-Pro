@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventInteractive Pro - Inimioare</title>
+    <title>EventInteractive Pro - Personalizabil</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body { 
-            background: #050505 url('https://i.ibb.co/MyX7mNk3/download-3.jpg') no-repeat center center fixed; 
+            background: #050505 url('https://i.ibb.co/yBWYrcHj/download-2.jpg') no-repeat center center fixed; 
             color: #ffffff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden;
             background-size: cover;
         }
 
         /* Inimioare Animate */
         .heart {
-            position: absolute; color: rgba(212, 175, 55, 0.7);
+            position: absolute; color: rgba(212, 175, 55, 0.6);
             font-size: 20px; user-select: none;
-            animation: moveHearts 10s linear infinite;
-            z-index: 1;
+            animation: moveHearts 10s linear infinite; z-index: 1;
         }
         @keyframes moveHearts {
             0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
@@ -33,15 +32,22 @@
         .card { 
             background: rgba(0, 0, 0, 0.85); border: 4px solid #d4af37; 
             padding: 40px 60px; border-radius: 40px; 
-            max-width: 85%; min-width: 40%; word-wrap: break-word;
+            max-width: 85%; min-width: 45%; word-wrap: break-word;
             box-shadow: 0 0 50px rgba(0, 0, 0, 1);
-            transition: all 0.5s ease; /* Face trecerea intre mesaje lina */
         }
         .author { font-size: 40px; color: #d4af37; margin-bottom: 20px; text-transform: uppercase; }
-        .text { font-size: 70px; font-weight: bold; line-height: 1.2; }
+        .text { font-size: 75px; font-weight: bold; line-height: 1.2; }
+
+        /* Buton Setări Fundal (Doar pe Laptop) */
+        #bg-settings {
+            position: fixed; bottom: 20px; right: 20px; z-index: 100;
+            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; border: 1px solid #d4af37;
+        }
+        #bg-settings label { color: #d4af37; cursor: pointer; font-weight: bold; font-size: 14px; }
 
         /* Interfața TELEFON */
         #form-ui { padding: 30px; position: relative; z-index: 10; background: #050505; min-height: 100vh; }
+        .logo-text { color: #d4af37; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
         input, textarea { 
             width: 90%; padding: 15px; margin: 10px 0; border-radius: 12px; 
             border: 2px solid #d4af37; background: #111; color: #fff; font-size: 18px; 
@@ -55,26 +61,28 @@
 <body>
 
     <div id="form-ui">
-        <h2 style="color:#d4af37">TRIMITE UN MESAJ</h2>
+        <div class="logo-text">EVENT INTERACTIVE LIVE</div>
         <input type="text" id="nume" placeholder="Numele tău">
-        <textarea id="mesaj" rows="4" placeholder="Mesajul tău..."></textarea>
+        <textarea id="mesaj" rows="4" placeholder="Scrie mesajul tău..."></textarea>
         <button onclick="trimite()">TRIMITE PE ECRAN</button>
-        <p id="status" style="display:none; color:#d4af37">✅ TRIMIS!</p>
+        <p id="status" style="display:none; color:#d4af37; margin-top:15px;">✅ MESAJ TRIMIS!</p>
     </div>
 
     <div id="display-ui">
         <div class="card">
             <div id="author-display" class="author">AȘTEPTĂM MESAJE...</div>
-            <div id="text-display" class="text">Scanează codul și scrie ceva!</div>
+            <div id="text-display" class="text">Scanează codul și scrie un mesaj live!</div>
+        </div>
+        
+        <div id="bg-settings">
+            <label for="upload-bg">🖼️ SCHIMBĂ FUNDALUL</label>
+            <input type="file" id="upload-bg" accept="image/*" style="display:none;">
         </div>
     </div>
 
     <script>
-        // Configurare
         const params = new URLSearchParams(window.location.search);
         let eventID = params.get('id') || 'test_dj';
-        let bgFoto = params.get('bg'); 
-        if(bgFoto) { document.body.style.backgroundImage = "url('" + bgFoto + "')"; }
 
         const firebaseConfig = {
             apiKey: "AIzaSyAs-V_E8_p8_8_8_8_8_8_8_8", 
@@ -85,14 +93,22 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database().ref(eventID);
 
-        // Detectare Dispozitiv
+        // Detectare Laptop/Telefon
         if (window.innerWidth > 800) {
             document.getElementById('display-ui').style.display = 'flex';
             document.getElementById('form-ui').style.display = 'none';
             creeazaInimioare();
         }
 
-        // Inimioare
+        // Funcția de Upload Poza (Local)
+        document.getElementById('upload-bg').addEventListener('change', function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.body.style.backgroundImage = "url('" + event.target.result + "')";
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        });
+
         function creeazaInimioare() {
             for (let i = 0; i < 15; i++) {
                 let heart = document.createElement('div');
