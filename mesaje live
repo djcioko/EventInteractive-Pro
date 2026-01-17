@@ -3,88 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Event Messages</title>
+    <title>EventInteractive Pro</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        /* Design modern, neutru (negru și auriu) care merge la orice party */
-        body { background: #050505; color: #ffffff; font-family: 'Arial', sans-serif; margin: 0; text-align: center; }
+        body { background: #050505; color: #ffffff; font-family: sans-serif; margin: 0; text-align: center; }
         .container { padding: 20px; }
-        #form-ui { display: none; }
-        #display-ui { display: none; height: 100vh; flex-direction: column; justify-content: center; background: radial-gradient(circle, #1a1a1a 0%, #000000 100%); }
-        input, textarea { width: 90%; max-width: 400px; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; font-size: 18px; }
-        button { background: #d4af37; color: #000; padding: 15px 30px; border: none; border-radius: 8px; font-weight: bold; font-size: 20px; cursor: pointer; }
-        .card { border: 4px solid #d4af37; padding: 40px; border-radius: 20px; margin: 20px; }
-        .author { font-size: 30px; color: #d4af37; margin-bottom: 10px; }
-        .text { font-size: 60px; font-weight: bold; }
+        /* Interfața de Ecran (Laptop/TV) */
+        #display-ui { display: none; height: 100vh; flex-direction: column; justify-content: center; background: black; }
+        .card { border: 5px solid #d4af37; padding: 50px; border-radius: 30px; margin: 20px; }
+        .author { font-size: 40px; color: #d4af37; margin-bottom: 20px; }
+        .text { font-size: 70px; font-weight: bold; line-height: 1.2; }
+        /* Interfața de Telefon */
+        input, textarea { width: 90%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #d4af37; background: #111; color: #fff; font-size: 18px; }
+        button { background: #d4af37; color: #000; padding: 20px; width: 90%; border: none; border-radius: 10px; font-weight: bold; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="form-ui" class="container">
-        <h2 id="event-title">MESAJ LIVE</h2>
+        <h1 style="color:#d4af37">TRIMITE MESAJ LIVE</h1>
         <input type="text" id="nume" placeholder="Numele tău">
-        <textarea id="mesaj" rows="3" placeholder="Mesajul tău..."></textarea><br>
-        <button onclick="trimite()">TRIMITE MESAJUL</button>
-        <p id="status" style="display:none; color: #d4af37;">✅ Trimis cu succes!</p>
+        <textarea id="mesaj" rows="4" placeholder="Scrie urarea ta aici..."></textarea>
+        <button onclick="trimite()">TRIMITE PE ECRAN</button>
+        <p id="status" style="display:none; color: #d4af37; font-size: 20px;">✅ Mesaj trimis!</p>
     </div>
 
     <div id="display-ui">
         <div class="card">
             <div id="author-display" class="author">AȘTEPTĂM MESAJE...</div>
-            <div id="text-display" class="text">Scanează codul QR și trimite o urare!</div>
+            <div id="text-display" class="text">Scanează codul QR pentru a trimite un mesaj live!</div>
         </div>
     </div>
 
     <script>
-        // Citim ID-ul evenimentului din link (?id=eveniment123)
+        // 1. CITIREA ID-ULUI DIN LINK
         const params = new URLSearchParams(window.location.search);
-        let eventID = params.get('id');
+        let eventID = params.get('id') || 'demo_general';
 
-        // Dacă nu există ID, nu lăsăm utilizatorul să scrie haotic
-        if (!eventID) {
-            document.body.innerHTML = "<h1>EROARE: Cod eveniment invalid.</h1>";
-        } else {
-            // Configurația ta Firebase
-            const firebaseConfig = {
-                apiKey: "AIzaSyAs-V_E8_p8_8_8_8_8_8_8_8", 
-                databaseURL: "https://felicitari-nunta-default-rtdb.firebaseio.com",
-                projectId: "felicitari-nunta",
-                appId: "1:102925718812:web:01f5ec325b8234133216d9"
-            };
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database().ref(eventID);
+        // 2. CONFIGURARE FIREBASE (Datele tale)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAs-V_E8_p8_8_8_8_8_8_8_8", 
+            databaseURL: "https://felicitari-nunta-default-rtdb.firebaseio.com",
+            projectId: "felicitari-nunta",
+            appId: "1:102925718812:web:01f5ec325b8234133216d9"
+        };
+        firebase.initializeApp(firebaseConfig);
+        
+        // CONECTARE LA FOLDERUL SPECIFIC
+        const db = firebase.database().ref(eventID);
 
-            // Detectăm dacă e telefon sau laptop
-            if (window.innerWidth < 800) {
-                document.getElementById('form-ui').style.display = 'block';
-            } else {
-                document.getElementById('display-ui').style.display = 'flex';
-            }
-
-            function trimite() {
-                const author = document.getElementById('nume').value;
-                const text = document.getElementById('mesaj').value;
-                if(author && text) {
-                    db.push({ author, text }).then(() => {
-                        document.getElementById('status').style.display = 'block';
-                        document.getElementById('mesaj').value = '';
-                        setTimeout(() => { document.getElementById('status').style.display = 'none'; }, 3000);
-                    });
-                }
-            }
-
-            // Ascultare mesaje
-            db.on('value', (snap) => {
-                const data = snap.val();
-                if(data) {
-                    const lista = Object.values(data);
-                    const ultimul = lista[lista.length - 1];
-                    document.getElementById('author-display').innerText = ultimul.author;
-                    document.getElementById('text-display').innerText = `"${ultimul.text}"`;
-                }
-            });
+        // 3. LOGICA DE AFISARE (TELEFON VS LAPTOP)
+        if (window.innerWidth > 800) {
+            document.getElementById('display-ui').style.display = 'flex';
+            document.getElementById('form-ui').style.display = 'none';
         }
+
+        // 4. FUNCTIA TRIMITE
+        function trimite() {
+            const author = document.getElementById('nume').value;
+            const text = document.getElementById('mesaj').value;
+            if(author && text) {
+                db.push({ author, text }).then(() => {
+                    document.getElementById('status').style.display = 'block';
+                    document.getElementById('mesaj').value = '';
+                    setTimeout(() => { document.getElementById('status').style.display = 'none'; }, 3000);
+                });
+            }
+        }
+
+        // 5. ASCULTARE MESAJE (PENTRU ECRAN)
+        db.on('value', (snap) => {
+            const data = snap.val();
+            if(data && window.innerWidth > 800) {
+                const lista = Object.values(data);
+                const ultimul = lista[lista.length - 1];
+                document.getElementById('author-display').innerText = ultimul.author;
+                document.getElementById('text-display').innerText = `"${ultimul.text}"`;
+            }
+        });
     </script>
 </body>
 </html>
